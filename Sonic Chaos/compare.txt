@@ -1,0 +1,11 @@
+
+Fcomp 0.3
+by Luigi Auriemma
+e-mail: aluigi@autistici.org
+web:    aluigi.org
+
+           SCbuilt.sms
+  Offset   |        SonicChaos.sms
+-----------------------------
+
+different bytes: 0

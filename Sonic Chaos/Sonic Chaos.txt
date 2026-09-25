@@ -1,0 +1,247 @@
+Sonic Chaos Master System Disassembly By RF (AKA Amber Davis)
+Yet another disassembly from me. Special thanks to Hivebrain for his notes, which are bellow.I hope to finish this someday.
+For now, i'm not sure if anyone would find this useful, but maybe someone will.   
+Screenmode Flags:
+$1- Title Card Sequence
+$7- Title Screen
+$6- Intro Sequence
+$4- Demo 
+Button Id's
+$00- Down
+$01- Up
+$02- right
+$03- left
+Most RAM addresses are still the same as Sonic 2, since this is Aspect's engine. :V They are bellow (not all are listed):
+$D137- Controller 1 input 
+$D516- Horizontal Velocity (which is always stored as a word, for obvious reasons.)
+$D518- Vertical Velocity
+$D500- Objects (Whether it be Sonic/Tails. $01-Sonic $02 Tails.) Other objects are located after Tails. 
+$D503- object state (setting the bitfield to 0 always sets the player in the air, and
+setting this to 1 sets the destroy on collision flag. Reseting bitfield 1 nulls out the
+destroy on collision flag, which of course hurts the player.)
+
+
+Hivebrain's Notes:
+Sonic Chaos (SMS) ROM Contents
+==============================
+
+8D8    ASCII - level select
+AD0    
+E464    Blank
+10000    Art - Sonic
+13D00    Blank
+14000    Art - more Sonic
+16940    Art - Tails
+17680    Art - MGHZ pole climber boss
+17EA0    Blank
+18000    Art - Tails
+1BC80    Blank
+1C000    Art - more Sonic
+1FA40    CompArt - HUD numbers, Km/h
+1FC6E    Blank
+20000    Art - more Tails
+23340    CompArt - HUD numbers, Km/h, life icon, monitors, spike, 16x16 block (some of this stuff gets overwritten by other stuff in the VRAM)
+23B92    Blank
+24000    
+24440    Art - end of act signpost
+253C0    CompArt - cone enemy (SEZ) same in gg for all compressed art after this
+255A0    CompArt - flying enemy - facing right (THZ, GPZ, EEZ)
+25690    CompArt - flying enemy - facing left (THZ, GPZ, EEZ)
+25780    CompArt - beetle enemy (GPZ)
+25950    CompArt - spring enemy (SEZ)
+25AB0    CompArt - motobug enemy (THZ)
+25CD0    CompArt - spring enemy (MGHZ)
+25EE0    CompArt - coconut bomb (MGHZ)
+26030    CompArt - spring (THZ, others)
+261C0    CompArt - platform (THZ)
+262C0    CompArt - platform (GPZ)
+26370    CompArt - platform (SEZ)
+26470    CompArt - platform (MGHZ)
+26570    CompArt - platform (APZ)
+26630    CompArt - platform (EEZ)
+26720    CompArt - shooting star (GPZ)
+26780    CompArt - oil splash (MGHZ)
+26840    CompArt - spring that Sonic stands on (SEZ)
+26A50    CompArt - bomb enemy (EEZ)
+26B60    CompArt - water surface wave (APZ)
+26D20    CompArt - laser cannons on ceiling (EEZ)
+26F10    CompArt - oil splash (MGHZ) duplicate
+26FD0    CompArt - small bit of something (EEZ) ###unused###
+26FF0    CompArt - sliding cart (EEZ)
+27090    CompArt - harpoon (APZ)
+27150    CompArt - penguin enemy (APZ)
+272C0    CompArt - bubbles (APZ)
+273E0    CompArt - spring - 1 frame only
+274A0    CompArt - splash (APZ)
+27600    CompArt - Robotnik (intro)
+27B60    CompArt - Tails (intro)
+27D90    CompArt - sparkles (good ending)
+27EC0    Art - "TM" same in gg up until smoke puff art
+27F40    Blank
+28000    Art - more Tails
+28940    Art - THZ motobug boss
+29280    Art - GPZ caterpillar boss
+29F80    Art - SEZ spring boss
+2A840    Art - APZ pod boss
+2B8C0    Blank
+2C000    Art - final boss
+2FE40    Blank
+2FD00    Art - smoke puff from monitor/enemy
+30000    
+3359C    Blank
+34000    
+354BC    Art - end of act signpost (final frame)
+ 360BC    Mappings?
+372BC    Blank
+ 38000    Collision Data determines which tiles should be solid. Adds 7 after each tile ID. 
+38970    
+399A0    Art - monitors Same in both SMS and GG
+3A3A0    
+3A3C0    CompArt - small fragment of a smashed block (THZ)-------------
+                                                                      - Same In GG
+3A3F0    CompArt - small fragment of a smashed block (GPZ)            -
+3A420    CompArt - small fragment of a smashed block (SEZ)            -
+3A448    CompArt - small fragment of a smashed block (MGHZ)           -
+3A478    CompArt - small fragment of a smashed block (APZ)            -
+3A4A0    CompArt - small fragment of a smashed block (EEZ)            -
+3A4D0    CompArt - small fragment of a smashed block (SS1/2)          -
+3A4F4    CompArt - small fragment of a smashed block (?)---------------
+3A51A    CompArt - blue chaos emerald (SS1)
+3A63A    CompArt - orange chaos emerald (SS2)
+3A79A    CompArt - green chaos emerald (SS3)
+3A90A    CompArt - grey chaos emerald (SS4)
+3AA6A    CompArt - purple chaos emerald (SS5)
+3ABDA    CompArt - "END" and Tails hanging from the "D" (tails good ending)
+3B23A    CompArt - "E" "N" "D" letters by themselves (sonic good ending)
+3B45A    
+3B64D    Pal - 
+3B67D    Pal - end of level results #1
+3B68D    Pal - end of level results #2
+3B69D    
+3B6AD    Pal - THZ
+3B6BD    Pal - GPZ
+3B6CD    Pal - SEZ
+3B6DD    Pal - MGHZ
+3B6ED    Pal - APZ
+3B6FD    Pal - EEZ
+3B70D    Pal - THZ boss
+3B71D    Pal - GPZ boss
+3B72D    Pal - SEZ boss
+3B73D    Pal - MGHZ boss
+3B74D    Pal - APZ boss
+3B75D    Pal - EEZ boss
+3B76D    Pal - special stage 1/2/4
+3B77D    Pal - special stage 3
+3B78D    Pal - special stage 5
+3B79D    Pal - Sonic - THZ
+3B7AD    Pal - Sonic - GPZ
+3B7BD    Pal - Sonic - SEZ
+3B7CD    Pal - Sonic - MGHZ
+3B7DD    Pal - Sonic - APZ
+3B7ED    Pal - Sonic - EEZ
+3B7FD    Pal - title screen #1
+3B80D    Pal - title screen #2
+3B81D    
+3B82D    Pal - character select
+3B83D    
+3B84D    
+3B85D    Pal - title cards
+3B86D    Pal - Sonic - continue screen?
+3B87D    
+3B88D    Pal - Sonic - continue screen?
+3B89D    Pal - try again screen
+3B8AD    Pal - Sonic - special stage 1/2/4
+3B8BD    Pal - Sonic - special stage 3/5
+3B8CD    Pal - Sonic - intro
+3B8DD    Pal - intro
+3B8ED    Pal - good ending #1
+3B8FD    Pal - good ending #2
+3B90D    Pal - good ending #3
+3B91D    Pal - good ending #4
+3B92D    Pal - good ending #5
+3B93D    Pal - good ending #6
+3B94D    
+3B95D    
+3B96D    Blank
+ 3C000    Sprite mappings?
+40000    CompArt - Sega logo-same in GG
+ 4039E    Mappings?
+40670    CompArt - text (level select, credits?)-same in GG
+40A70    CompArt - "TIME OVER"
+ 40F16    Mappings?
+40F9E    CompArt - THZ/intro tiles
+42478    CompArt - GPZ tiles
+43E24    Blank    
+44000    32x32 - THZ/intro
+$447B0-$447BF First Spring mappings
+45640    32x32 - GPZ
+46A40    32x32 - SEZ
+477C0    Blank
+48000    THZ1 layout
+48BA9    THZ2 layout
+49815    THZ3 layout
+49C25    GPZ1 layout
+4AA00    GPZ2 layout
+4B987    GPZ3 layout
+4BD4D    Blank
+4C000    CompArt - player select screen-same in GG
+ 4CE9C    Mappings?
+4D49C    CompArt - end of act results screen
+4E7E6    CompArt - title card (THZ)
+4F5B0~    CompArt - continue screen
+4FEC5    
+50000    32x32 - MGHZ
+51320    32x32 - APZ
+53460    SEZ3 layout
+53DD2    Blank
+54000    SEZ1 layout
+54CC8    SEZ2 layout
+559D4    MGHZ1 layout
+566B8    MGHZ2 layout
+572FB    MGHZ3 layout
+57AF3    APZ3 layout
+57E0D    Blank
+58000    CompArt - APZ tiles-same in gg
+59800    CompArt - EEZ tiles-same in gg
+5B6F0    Blank
+5C000    APZ1 layout
+5C7C1    APZ2 layout
+5CF3A    EEZ1 layout
+5DB73    EEZ2 layout
+5E853    EEZ3 layout
+5F407    Intro level layout
+5F74D    Blank
+60000    CompArt - SEZ tiles
+619F0    CompArt - MGHZ tiles
+6301C    Blank
+64000    CompArt - SS1/2/4 tiles
+65590    CompArt - SS3/5 tiles
+66C72    
+6757A    Blank
+68000    SS1 layout
+685A8    SS2 layout
+68848    SS3 layout
+68C1E    SS4 layout
+69258    SS5 layout
+695DC    CompArt - credits text and giant emerald that Sonic runs around in (good ending)
+6B0F2    ASCII - credits
+6B2EC    
+6B7D1    Blank
+6C000    32x32 - SS1/2/4
+6CF60    32x32 - SS3/5
+6DE00    CompArt - title screen
+6FA14    
+6FD18    Blank
+70000    
+705AE    ObjPos - THZ1
+the first object (besides the player object) is the platform that moves up and down
+Objects:
+$28- Platform that moves up and down
+         (followed by other levels' ObjPos)
+719B4    Blank
+74000    
+7455D    Art - rings ($74580 in gg) (16 tiles)
+7475D    Art - unknown GPZ stars? ($74780 in gg)
+74FBD    Art - conveyor belt (EEZ)
+7513D    Art - giant rings
+7593D

@@ -20,6 +20,7 @@
   addEventListener('keydown', (e) => { if (KEYMAP[e.code] !== undefined) { keys.add(e.code); e.preventDefault(); } if (e.code === 'Enter' && SC.gameOver) restart(); });
   addEventListener('keyup', (e) => { keys.delete(e.code); });
   function joy() {
+    if (SC.inputOverride) return SC.inputOverride();
     let j = 0;
     for (const k of keys) j |= KEYMAP[k];
     for (const gp of (navigator.getGamepads ? navigator.getGamepads() : [])) {
@@ -114,8 +115,23 @@
     let n = 0;
     while (acc >= STEP && n < 5) { tick(); acc -= STEP; n++; }
     SC.render(SC.rw(0xD174), SC.rw(0xD176));
-    if (SC.gameOver) { SC.drawText && SC.drawText('GAME OVER - ENTER'); }
+    banner();
     requestAnimationFrame(loop);
   }
+  const bannerEl = document.getElementById('banner');
+  let bannerText = '';
+  const bcd = (v) => (v >> 4) * 10 + (v & 15);
+  function banner() {
+    let t = '';
+    if (SC.gameOver) t = 'GAME OVER\n\nEnter para reintentar';
+    else if (SC.results && SC.results.t > 30) {
+      const r = SC.results;
+      const rings = bcd(r.rings), mins = bcd(r.time >> 8), secs = bcd(r.time & 0xFF);
+      t = 'SONIC HAS PASSED\n\nRINGS  ' + rings + ' x 100 = ' + rings * 100 +
+          '\nTIME   ' + mins + ':' + String(secs).padStart(2, '0') + '\n\nEnter para jugar otra vez';
+    }
+    if (t !== bannerText) { bannerText = t; bannerEl.textContent = t; bannerEl.style.display = t ? 'block' : 'none'; }
+  }
+  addEventListener('keydown', (e) => { if (e.code === 'Enter' && SC.results && SC.results.t > 30) { SC.results = null; restart(); } });
   window.addEventListener('blur', () => keys.clear());
 })();

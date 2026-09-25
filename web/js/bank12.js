@@ -89,4 +89,25 @@
   });
   def(0x818F, function () { return (rb(0xD448) & 1) !== 0; });
   def(0x807C, function () {});
+  // $83A6: after the goal, Sonic runs off the right edge of the screen, then the act ends
+  def(0x83A6, function () {
+    xres(4, 7);
+    xsw(24, 0);
+    xres(4, 4);
+    const de = (xw(17) - rw(0xD174)) & 0xFFFF;
+    const edge = SC.VIEW_W === 256 ? 0xF8 : SC.VIEW_W - 8;
+    if (de > edge) {
+      call(0x59B9);
+      const out = SC.VIEW_W === 256 ? 0x120 : SC.VIEW_W + 32;
+      if (de > out) {
+        xsw(22, 0);
+        bset(0xD293, rb(0xD298) >= 2 ? 4 : 5);
+        return;
+      }
+    }
+    let hl = rw(0xD516);
+    if (hl & 0x8000) { hl = 0; ww(0xD516, 0); }
+    if ((hl >> 8) < 6) xsw(22, (hl + 0x10) & 0xFFFF);
+    return call(0x60FB);
+  });
 })(typeof window !== 'undefined' ? window : globalThis);

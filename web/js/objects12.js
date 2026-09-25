@@ -394,9 +394,9 @@
     } else xs(52, 0xFF);
   }
   function f_AA22() {
-    const de = (xw(20) - 0x0099) & 0xFFFF;
+    const de = (xw(20) - 0x0099 - ((SC.VIEW_H - 192) >> 1)) & 0xFFFF;
     ww(0xD11C, de);
-    const bc = (xw(17) - 0x0080) & 0xFFFF;
+    const bc = (xw(17) - (SC.VIEW_W >> 1)) & 0xFFFF;
     return call(0x59C5, bc, rw(0xD11C));
   }
   def(0xAA47, () => call(0x5E9C, 0x19, 0x00));

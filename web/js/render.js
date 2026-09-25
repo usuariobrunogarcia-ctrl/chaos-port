@@ -65,7 +65,7 @@
       const rowOff = rw((rowTbl + by * 2) & 0xFFFF);
       for (let c = 0; c < cols; c++) {
         const tx = tx0 + c;
-        if (tx < 0 || (tx >> 2) >= 128) continue;
+        if (tx < 0) continue;   // like the original, x past the row width wraps into the next row
         const la = 0xC001 + rowOff + (tx >> 2);
         if (la > 0xCFFF) continue;
         const blk = SC.ram[la - 0xC000];

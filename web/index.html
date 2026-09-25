@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Sonic Chaos - Turquoise Hill</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; color: #eee; }
+  #screen { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); image-rendering: pixelated; image-rendering: crisp-edges; background: #000; }
+  #overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #0b1a3a; }
+  #box { max-width: 520px; padding: 24px; text-align: center; line-height: 1.5; }
+  #box h1 { margin: 0 0 8px; font-size: 22px; color: #6cf; }
+  label.btn { display: inline-block; margin: 16px 0; padding: 12px 20px; border-radius: 8px; background: #1e6fd9; color: #fff; cursor: pointer; font-weight: 600; }
+  #file { display: none; }
+  #msg { color: #fc6; min-height: 1.5em; }
+  small { color: #9ab; }
+  #touch { position: absolute; inset: auto 0 0 0; display: none; justify-content: space-between; padding: 12px; pointer-events: none; }
+  #touch div { display: flex; gap: 8px; pointer-events: auto; }
+  #touch button { width: 56px; height: 56px; border-radius: 50%; border: 0; background: rgba(255,255,255,.18); color: #fff; font-size: 18px; }
+  @media (pointer: coarse) { #touch { display: flex; } }
+</style>
+</head>
+<body>
+<canvas id="screen" width="400" height="224"></canvas>
+<div id="overlay"><div id="box">
+  <h1>Sonic Chaos — Turquoise Hill Zone 1</h1>
+  <p>Recreación en HTML. Los gráficos, el nivel y la lógica se extraen en el navegador de tu ROM original de Sonic Chaos (Master System).</p>
+  <label class="btn">Cargar ROM (.sms)<input type="file" id="file" accept=".sms,.bin"></label>
+  <p id="msg"></p>
+  <small>También podés arrastrar el archivo a esta ventana.<br>
+  Controles: flechas / WASD para moverse · Z, X o Espacio para saltar · abajo + salto = spin dash · arriba + salto = super peel out. Gamepad compatible.</small>
+</div></div>
+<div id="touch">
+  <div><button data-k="ArrowLeft">◀</button><button data-k="ArrowDown">▼</button><button data-k="ArrowUp">▲</button><button data-k="ArrowRight">▶</button></div>
+  <div><button data-k="KeyZ">A</button></div>
+</div>
+<script src="js/core.js"></script>
+<script src="js/misc.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/player.js"></script>
+<script src="js/collision.js"></script>
+<script src="js/objects.js"></script>
+<script src="js/bank12.js"></script>
+<script src="js/objects12.js"></script>
+<script src="js/objects30.js"></script>
+<script src="js/spawner.js"></script>
+<script src="js/vdp.js"></script>
+<script src="js/level.js"></script>
+<script src="js/render.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

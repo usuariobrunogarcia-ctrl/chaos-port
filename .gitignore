@@ -1,0 +1,3 @@
+*.sms.bak
+tools/re/*.so
+tools/re/__pycache__/

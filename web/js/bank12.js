@@ -89,6 +89,36 @@
   });
   def(0x818F, function () { return (rb(0xD448) & 1) !== 0; });
   def(0x807C, function () {});
+  // $94C1: running around a vertical loop (state $22).  Per loop block a small
+  // handler sets the direction of motion (ix+10) and snaps Sonic to the track.
+  function snapY(off) { xsw(20, (((xw(20) + off) & 0xFFE0) + 0x2E) & 0xFFFF); }
+  const f_97B8 = () => snapY(0xFFE0);
+  const f_979F = () => snapY(0xFFF0);
+  const LOOP_H = {
+    0x95F1: () => { xs(10, 0x40); f_97B8(); }, 0x95F4: () => { xs(10, 0x40); f_97B8(); },
+    0x95FC: () => xs(10, 0x28), 0x9604: () => xs(10, 0x28), 0x960C: () => xs(10, 0x40),
+    0x9611: () => xs(10, 0x58), 0x9619: () => xs(10, 0x58),
+    0x9621: () => { xs(10, 0x40); f_97B8(); }, 0x9629: () => { xs(10, 0x40); f_97B8(); },
+    0x9631: () => { xs(10, 0xC0); f_979F(); }, 0x9634: () => { xs(10, 0xC0); f_979F(); },
+    0x963C: () => { xs(10, 0xC0); f_97B8(); }, 0x9644: () => xs(10, 0xA8),
+    0x964C: () => { xs(10, 0xC0); f_97B8(); }, 0x9654: () => xs(10, 0xA8), 0x965D: () => xs(10, 0xC0),
+    0x9662: () => xs(10, 0xD8), 0x966A: () => xs(10, 0xD8),
+    0x9672: () => { xs(10, 0xC0); f_979F(); }, 0x967A: () => { xs(10, 0xC0); f_97B8(); },
+  };
+  def(0x94C1, function () {
+    call(0x48BC);
+    call(0x691A);
+    if ((rb(0xD364) & 0x3F) !== 0x17) { xs(10, 0); xs(11, 0); xs(2, 0x09); return; }
+    const tbl = rw(0x94F5 + (xb(56) & 3) * 2);
+    const h = rw(tbl + (((rb(0xD353) - 0x58) * 2) & 0xFF));
+    const f = LOOP_H[h];
+    if (!f) throw new Error('loop handler ' + h.toString(16));
+    f();
+    call(0x6089);
+    call(0x60FB);
+  });
+  // $8313: super peel out start - brief invulnerability
+  def(0x8313, function () { xset(3, 7); wb(0xD3B1, 0x0C); });
   // $83A6: after the goal, Sonic runs off the right edge of the screen, then the act ends
   def(0x83A6, function () {
     xres(4, 7);

@@ -34,6 +34,7 @@
     wb(0xD15E, rb(0xD15E) & 0xF0);
     if (rb(0xD15F) & 1) return f_5956();
     f_58E1();
+    if (SC.VIEW_W !== 256 || SC.VIEW_H !== 192) return wide5832();
     // horizontal
     let b = rb(0xD28A);
     let hl = (rw(0xD511) - rw(0xD284)) & 0xFFFF;
@@ -77,6 +78,29 @@
     if (a < 0xF8) a = 0xF9;
     ww(0xD286, (0xFF00 | a) + rw(0xD176) & 0xFFFF);
     bset(0xD15E, 0);
+  }
+  // Same dead-zone camera with signed 16-bit screen coordinates (views wider than 256).
+  function wide5832() {
+    let d = SC.s16(rw(0xD511) - rw(0xD284));
+    if (d >= rb(0xD28A)) {
+      if (d >= rb(0xD28B)) {
+        ww(0xD284, (rw(0xD174) + Math.min(d - rb(0xD28B), 7)) & 0xFFFF);
+        bset(0xD15E, 3);
+      }
+    } else if (d < rb(0xD28C)) {
+      ww(0xD284, (rw(0xD174) + Math.max(d - rb(0xD28C), -7)) & 0xFFFF);
+      bset(0xD15E, 2);
+    }
+    d = SC.s16(rw(0xD514) - rw(0xD286));
+    if (d >= rb(0xD28D)) {
+      if (d >= rb(0xD28E)) {
+        ww(0xD286, (rw(0xD176) + Math.min(d - rb(0xD28E), 7)) & 0xFFFF);
+        bset(0xD15E, 1);
+      }
+    } else if (d < rb(0xD28F)) {
+      ww(0xD286, (rw(0xD176) + Math.max(d - rb(0xD28F), -7)) & 0xFFFF);
+      bset(0xD15E, 0);
+    }
   }
   // Camera offsets: the original uses screen positions for a 256x192 screen.
   // For other view sizes they are mapped around the screen centre.

@@ -55,8 +55,11 @@
     const back = pal[0];
     fb.fill(0xFF000000); prio.fill(0);
     const rowTbl = rw(0xD168);
-    const tx0 = camX >> 3, ty0 = camY >> 3;
-    const ox = camX & 7, oy = camY & 7;
+    // The original scrolls the background to (camera x + 1, camera y + 17)
+    // (VDP registers from $4D3E) while sprites are placed relative to the camera.
+    const bgX = camX + 1, bgY = camY + 17;
+    const tx0 = bgX >> 3, ty0 = bgY >> 3;
+    const ox = bgX & 7, oy = bgY & 7;
     const cols = (W >> 3) + 2, rows = (H >> 3) + 2;
     for (let r = 0; r < rows; r++) {
       const ty = ty0 + r;

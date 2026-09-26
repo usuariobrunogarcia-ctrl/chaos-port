@@ -95,7 +95,7 @@
     ww(0xD27E, Math.max(rw(0xD27C), rw(0xD27E) + 192 - SC.VIEW_H));
     wb(0xD288, 0x68); wb(0xD289, 0x78);
     // Calculate_CameraBounds
-    const cx = SC.VIEW_W === 256 ? 0x68 : 0x68 + ((SC.VIEW_W - 256) >> 1);
+    const cx = 0x68;
     wb(0xD28A, cx); wb(0xD28C, cx - 8); wb(0xD28B, cx + 8);
     const cy = SC.camY(0x78);
     wb(0xD28D, cy); wb(0xD28F, cy - 0x10); wb(0xD28E, cy + 0x10);

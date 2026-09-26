@@ -112,9 +112,12 @@
   function snapObjects(dst) {
     for (let k = 0; k < 20; k++) { dst[k * 2] = SC.rw(0xD511 + k * 0x40); dst[k * 2 + 1] = SC.rw(0xD514 + k * 0x40); }
   }
+  // The sprite list is built in vblank from the object positions left by the
+  // previous logic frame, so positions are sampled right before vblank.
   function tick() {
     prevCam[0] = SC.rw(0xD174); prevCam[1] = SC.rw(0xD176);
-    snapObjects(prevObj);
+    prevObj.set(curObj);
+    snapObjects(curObj);
     SC.vblank(joy());
     if (!SC.gameOver) SC.logic();
   }
@@ -136,7 +139,6 @@
       const t = acc / STEP;
       cx = (cx + lerp(prevCam[0], cx, t)) & 0xFFFF;
       cy = (cy + lerp(prevCam[1], cy, t)) & 0xFFFF;
-      snapObjects(curObj);
       for (let k = 0; k < 20; k++) {
         offs[k] = [lerp(prevObj[k * 2], curObj[k * 2], t), lerp(prevObj[k * 2 + 1], curObj[k * 2 + 1], t)];
       }

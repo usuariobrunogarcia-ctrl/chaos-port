@@ -73,7 +73,7 @@
     SC.setView(w, VIEW_H);
     SC.renderSetup(canvas, w, VIEW_H);
     fit();
-    if (SC.loadCharacterSheet) SC.loadCharacterSheet('custom_character.png');
+    if (SC.loadCharacterSheet) SC.loadCharacterSheet();
     restart();
     overlay.style.display = 'none';
     showSelect();
@@ -82,7 +82,7 @@
   function restart() {
     SC.gameOver = false;
     SC.results = null;
-    SC.gliding = false;
+    if (SC.resetCharacter) SC.resetCharacter();
     SC.initGame();
   }
 

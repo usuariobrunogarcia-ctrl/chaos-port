@@ -19,6 +19,30 @@ Si la ROM está en `Sonic Chaos/SonicChaos.sms` se carga sola. Si no, usá el bo
 
 Controles: flechas/WASD, salto con Z / X / Espacio. Abajo + salto = spin dash, arriba + salto = super peel out. Gamepad y controles táctiles.
 
+## Personajes
+
+Al empezar se elige personaje (← → y Enter, o tocando la tarjeta):
+
+- **Sonic** — el original, sin cambios.
+- **Nimbo** — personaje original (una ardilla voladora) que usa el mismo motor: misma física en el suelo, salto un poco más bajo (unos 85 px contra 96) y, si presionás salto otra vez en el aire, **planea** mientras mantengas el botón (cae lento y sigue avanzando).
+
+La lógica está en `web/js/player.js` (`SC.CHARACTERS`) y el dibujo en `web/js/character.js`.
+
+### Hoja de sprites propia
+
+Si existe `web/custom_character.png`, se usa en lugar del arte incluido. Formato: una fila de celdas de 32×32, fondo transparente, mirando a la derecha, pies en la última fila de la celda:
+
+| Celdas | Animación |
+| --- | --- |
+| 0 | quieto |
+| 1–4 | caminar |
+| 5–8 | correr |
+| 9–12 | bola (salto / rodar) |
+| 13–14 | planear |
+| 15 | golpeado |
+
+Para partir de una plantilla: `node tools/export_character.js web/custom_character.png` exporta el arte incluido en ese formato.
+
 ## Estructura
 
 - `web/js/core.js` — ROM, mapper, RAM con el mismo mapa que el original.
@@ -26,6 +50,7 @@ Controles: flechas/WASD, salto con Z / X / Espacio. Abajo + salto = spin dash, a
 - `web/js/objects*.js`, `spawner.js`, `bank12.js` — sistema de objetos y scripts de animación.
 - `web/js/level.js` — carga del nivel, trabajo de VBlank, bucle principal.
 - `web/js/vdp.js`, `render.js` — VRAM y renderizador.
+- `web/js/character.js` — gráficos del personaje original y carga de `custom_character.png`.
 - `tools/` — herramientas de verificación e ingeniería inversa (emulador de referencia en `tools/re`).
 
 Pendiente: sonido y música.

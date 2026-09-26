@@ -1,4 +1,4 @@
-// Writes the built-in Knuckles sheet as a PNG template for web/knuckles.png:
+// Writes the built-in (placeholder) Knuckles sheet in the web/knuckles.png format:
 //   node tools/export_character.js out.png [scale]
 const fs = require('fs'), path = require('path'), vm = require('vm'), zlib = require('zlib');
 global.SC = {};

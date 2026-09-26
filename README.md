@@ -32,26 +32,28 @@ Al empezar se elige personaje (← → y Enter, o tocando la tarjeta):
 
 La lógica está en `web/js/player.js` (`SC.CHARACTERS` y la sección *Knuckles*) y el dibujo en `web/js/character.js`.
 
-### Hoja de sprites
+### Sprites
 
-Si existe `web/knuckles.png`, se usa en lugar del arte incluido. Formato: una fila de celdas cuadradas (el lado de la celda es el alto de la imagen, por ejemplo 40×40 o 48×48), fondo transparente, mirando a la derecha, pies en la última fila de la celda y cuerpo centrado:
+Los sprites de Knuckles son de **PixelMarioXP** (hoja *Sonic Chaos – Knuckles the Echidna*, editada al estilo del juego). La hoja original está en `art/knuckles_chaos_pixelmarioxp.png` y `node tools/build_knuckles_sheet.js` la convierte en `web/knuckles.png`, que es lo que carga el juego. Si falta ese archivo, se usa un dibujo provisorio generado por código.
+
+Formato de `web/knuckles.png`: una fila de celdas cuadradas (el lado de la celda es el alto de la imagen; la hoja actual usa 40×40), fondo transparente, mirando a la derecha, pies en la última fila de la celda y cuerpo centrado:
 
 | Celdas | Animación |
 | --- | --- |
 | 0 | quieto |
-| 1–4 | caminar |
-| 5–8 | correr |
-| 9–12 | bola (salto / rodar) |
-| 13 | planear |
-| 14 | planear girando (de frente) |
-| 15 | caer (soltó el planeo) |
-| 16–19 | trepar (pared a la derecha) |
-| 20–21 | subir al borde |
-| 22 | deslizarse de panza |
-| 23 | levantarse |
-| 24 | golpeado |
+| 1–6 | caminar |
+| 7–10 | correr |
+| 11–14 | bola (salto / rodar) |
+| 15 | planear |
+| 16 | planear girando (de frente) |
+| 17 | caer (soltó el planeo) |
+| 18–21 | trepar (pared a la derecha) |
+| 22–23 | subir al borde |
+| 24 | deslizarse de panza |
+| 25 | levantarse |
+| 26 | golpeado |
 
-Las celdas que falten usan la 0. Para partir de una plantilla: `node tools/export_character.js web/knuckles.png` exporta el arte incluido en ese formato.
+Las celdas que falten usan la 0. Para cambiar qué cuadro de la hoja original va en cada celda, se editan los rectángulos de `tools/build_knuckles_sheet.js`. `node tools/export_character.js salida.png` exporta el dibujo provisorio en este formato.
 
 ## Estructura
 
@@ -60,7 +62,7 @@ Las celdas que falten usan la 0. Para partir de una plantilla: `node tools/expor
 - `web/js/objects*.js`, `spawner.js`, `bank12.js` — sistema de objetos y scripts de animación.
 - `web/js/level.js` — carga del nivel, trabajo de VBlank, bucle principal.
 - `web/js/vdp.js`, `render.js` — VRAM y renderizador.
-- `web/js/character.js` — gráficos de Knuckles y carga de `knuckles.png`.
+- `web/js/character.js` — animación de Knuckles y carga de `knuckles.png`.
 - `tools/` — herramientas de verificación e ingeniería inversa (emulador de referencia en `tools/re`).
 
 Pendiente: sonido y música.

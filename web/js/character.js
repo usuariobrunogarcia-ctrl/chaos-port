@@ -3,7 +3,12 @@
  * object at $D500 (see player.js); here we only replace the drawing of that
  * object.
  *
- * Sprite sheet format (knuckles.png, next to index.html):
+ * The sheet comes from js/knuckles_sheet.js (built by tools/build_knuckles_sheet.js,
+ * embedded as a data URL so it also works when index.html is opened straight
+ * from disk).  A knuckles.png next to index.html overrides it when the page is
+ * served over http.
+ *
+ * Sprite sheet format:
  *   one row of square cells (the cell size is the image height, e.g. 40x40 or
  *   48x48), transparent background, character facing right, feet on the bottom
  *   row of the cell, body centred horizontally.  For the climbing frames he
@@ -268,12 +273,21 @@
       img.src = url;
     });
   }
+  const usable = (s) => s && s.h >= 16 && s.w >= s.h;
   SC.loadCharacterSheet = async function (url) {
-    const s = await loadSheet(url || SHEET_FILE);
-    const ok = s && s.h >= 16 && s.w >= s.h;
-    sheet = ok ? s : makeSheet();
-    SC.characterSheetSource = ok ? (url || SHEET_FILE) : 'built-in';
-    return SC.characterSheetSource;
+    const tries = [[url || SHEET_FILE, url || SHEET_FILE]];
+    if (!url && SC.KNUCKLES_SHEET) tries.push([SC.KNUCKLES_SHEET, 'embedded']);
+    for (const [src, name] of tries) {
+      const s = await loadSheet(src);
+      if (usable(s)) {
+        sheet = s;
+        SC.characterSheetSource = name;
+        return name;
+      }
+    }
+    sheet = makeSheet();
+    SC.characterSheetSource = 'built-in';
+    return 'built-in';
   };
   sheet = makeSheet();
   SC.builtinCharacterSheet = makeSheet;   // used by tools/export_character.js

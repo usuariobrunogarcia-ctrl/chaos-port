@@ -34,9 +34,11 @@ La lógica está en `web/js/player.js` (`SC.CHARACTERS` y la sección *Knuckles*
 
 ### Sprites
 
-Los sprites de Knuckles son de **PixelMarioXP** (hoja *Sonic Chaos – Knuckles the Echidna*, editada al estilo del juego). La hoja original está en `art/knuckles_chaos_pixelmarioxp.png` y `node tools/build_knuckles_sheet.js` la convierte en `web/knuckles.png`, que es lo que carga el juego. Si falta ese archivo, se usa un dibujo provisorio generado por código.
+Los sprites de Knuckles son de **PixelMarioXP** (hoja *Sonic Chaos – Knuckles the Echidna*, editada al estilo del juego). La hoja original está en `art/knuckles_chaos_pixelmarioxp.png` y `node tools/build_knuckles_sheet.js` la convierte en `web/js/knuckles_sheet.js`, que es lo que carga el juego. Va incrustada en un archivo JS para que funcione también abriendo `web/index.html` directo del disco.
 
-Formato de `web/knuckles.png`: una fila de celdas cuadradas (el lado de la celda es el alto de la imagen; la hoja actual usa 40×40), fondo transparente, mirando a la derecha, pies en la última fila de la celda y cuerpo centrado:
+Para probar otra hoja sin regenerar nada, poné un `web/knuckles.png` y serví la carpeta con un servidor: tiene prioridad sobre la incluida. Si no hay ninguna, se usa un dibujo provisorio generado por código.
+
+Formato de la hoja: una fila de celdas cuadradas (el lado de la celda es el alto de la imagen; la hoja actual usa 40×40), fondo transparente, mirando a la derecha, pies en la última fila de la celda y cuerpo centrado:
 
 | Celdas | Animación |
 | --- | --- |

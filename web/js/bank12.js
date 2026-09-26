@@ -41,6 +41,34 @@
     xs(6, (a + c) & 0xFF);
     xs(7, 0x04);
   });
+  // $8C6F: Tails' flying sound (quieter while touching something)
+  def(0x8C6F, function () {
+    wb(0xDE04, rb(0xD522) & 0x0F ? 0xC0 : 0xB0);
+  });
+  // $8CB4: Tails' walking animation
+  def(0x8CB4, function () {
+    if (xb(35) & 0x0C) { xs(6, 0x55); xs(7, 0x02); return; }   // pushing a wall
+    let c = 0x01, b = 0x06;
+    if (xbit(36, 0)) { c = 0x34; b = 0x03; }
+    let a = (rb(0xD52F) + 1) & 0xFF;
+    wb(0xD52F, a);
+    if (a >= b) { a = 0; wb(0xD52F, 0); }
+    xs(6, (a + c) & 0xFF);
+    xs(7, rb(0x8CEC + absHiVX()));
+  });
+  // $8D05: Tails' running animation
+  def(0x8D05, function () {
+    let c = 0x07;
+    if (xbit(36, 0)) {
+      if ((rb(0xD36C) & 0x1F) === 0x19) c = 0x34;
+      else { xres(36, 0); wb(0xD3BC, 0); }
+    }
+    let a = (rb(0xD52F) + 1) & 0xFF;
+    wb(0xD52F, a);
+    if (a >= 3) { a = 0; wb(0xD52F, 0); }
+    xs(6, (a + c) & 0xFF);
+    xs(7, 0x02);
+  });
   // $8F76: rolling/jumping ball animation
   function f_8F76() {
     let a = (rb(0xD52F) + 1) & 0xFF;

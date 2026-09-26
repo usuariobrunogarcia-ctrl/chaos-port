@@ -24,6 +24,7 @@ Controles: flechas/WASD, salto con Z / X / Espacio. Abajo + salto = spin dash, a
 Al empezar se elige personaje (← → y Enter, o tocando la tarjeta):
 
 - **Sonic** — el original, sin cambios.
+- **Tails** — el segundo personaje del juego original, portado de su código: arranca con 5 vidas y, parado, **arriba + salto = volar** durante unos 5 segundos (se mueve con las flechas). Como en el original, no entra a las etapas especiales.
 - **Knuckles** — al estilo de Sonic 3, sobre el mismo motor (misma física en el suelo):
   - salta un poco menos (unos 85 px contra 96);
   - **planea** si presionás salto otra vez en el aire, mientras mantengas el botón. Acelera de a poco, gira con ← → y rompe enemigos de frente. Si soltás el botón, cae;

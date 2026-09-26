@@ -80,8 +80,11 @@
     bset(0xD15E, 0);
   }
   // Same dead-zone camera with signed 16-bit screen coordinates (views wider than 256).
+  // The horizontal thresholds stay in RAM as 256-wide screen positions (they would
+  // overflow a byte on very wide views); the view centre offset is added here.
   function wide5832() {
-    let d = SC.s16(rw(0xD511) - rw(0xD284));
+    const ox = (SC.VIEW_W - 256) >> 1;
+    let d = SC.s16(rw(0xD511) - rw(0xD284)) - ox;
     if (d >= rb(0xD28A)) {
       if (d >= rb(0xD28B)) {
         ww(0xD284, (rw(0xD174) + Math.min(d - rb(0xD28B), 7)) & 0xFFFF);
@@ -102,15 +105,12 @@
       bset(0xD15E, 0);
     }
   }
-  // Camera offsets: the original uses screen positions for a 256x192 screen.
-  // For other view sizes they are mapped around the screen centre.
-  function camX(v) { return SC.VIEW_W === 256 ? v : v + ((SC.VIEW_W - 256) >> 1); }
   function f_58E1() {
     let b = 0x78;
     if (!(rb(0xD15F) & 3)) {
       b = (rb(0xD504) & 0x10) ? 0x88 : 0x68;
     }
-    wb(0xD288, camX(b));
+    wb(0xD288, b);
     b = rb(0xD28A);
     const tx = rb(0xD288);
     if (tx !== b) {

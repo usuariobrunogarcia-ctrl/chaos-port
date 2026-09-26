@@ -20,6 +20,7 @@
   addEventListener('keydown', (e) => { if (KEYMAP[e.code] !== undefined) { keys.add(e.code); e.preventDefault(); } if (e.code === 'Enter' && SC.gameOver) restart(); });
   addEventListener('keyup', (e) => { keys.delete(e.code); });
   function joy() {
+    if (SC.inputOverride) return SC.inputOverride();
     let j = 0;
     for (const k of keys) j |= KEYMAP[k];
     for (const gp of (navigator.getGamepads ? navigator.getGamepads() : [])) {
@@ -102,20 +103,63 @@
   })();
 
   // ---- loop: fixed 60 Hz logic, render on every display frame ----
+  // On displays faster than 60 Hz the camera and the objects are drawn
+  // interpolated between the last two logic frames, so motion stays smooth.
   const STEP = 1000 / 60;
-  let acc = 0, last = performance.now();
+  let acc = 0, last = performance.now(), frameAvg = STEP;
+  const prevCam = [0, 0], prevObj = new Int32Array(40), curObj = new Int32Array(40);
+  const s16 = (v) => (v << 16) >> 16;
+  function snapObjects(dst) {
+    for (let k = 0; k < 20; k++) { dst[k * 2] = SC.rw(0xD511 + k * 0x40); dst[k * 2 + 1] = SC.rw(0xD514 + k * 0x40); }
+  }
   function tick() {
+    prevCam[0] = SC.rw(0xD174); prevCam[1] = SC.rw(0xD176);
+    snapObjects(prevObj);
     SC.vblank(joy());
     if (!SC.gameOver) SC.logic();
   }
+  const offs = [];
+  function lerp(a, b, t) {
+    const d = s16(b - a);
+    return Math.abs(d) > 48 ? 0 : Math.round(-d * (1 - t));   // offset from the current value
+  }
   function loop(now) {
-    acc += Math.min(now - last, 250);
+    const dt = Math.min(now - last, 250);
+    frameAvg += (dt - frameAvg) * 0.05;
+    acc += dt;
     last = now;
     let n = 0;
     while (acc >= STEP && n < 5) { tick(); acc -= STEP; n++; }
-    SC.render(SC.rw(0xD174), SC.rw(0xD176));
-    if (SC.gameOver) { SC.drawText && SC.drawText('GAME OVER - ENTER'); }
+    if (acc > STEP) acc = STEP;
+    let cx = SC.rw(0xD174), cy = SC.rw(0xD176), o = null;
+    if (frameAvg < STEP * 0.85) {
+      const t = acc / STEP;
+      cx = (cx + lerp(prevCam[0], cx, t)) & 0xFFFF;
+      cy = (cy + lerp(prevCam[1], cy, t)) & 0xFFFF;
+      snapObjects(curObj);
+      for (let k = 0; k < 20; k++) {
+        offs[k] = [lerp(prevObj[k * 2], curObj[k * 2], t), lerp(prevObj[k * 2 + 1], curObj[k * 2 + 1], t)];
+      }
+      o = offs;
+    }
+    SC.render(cx, cy, o);
+    banner();
     requestAnimationFrame(loop);
   }
+  const bannerEl = document.getElementById('banner');
+  let bannerText = '';
+  const bcd = (v) => (v >> 4) * 10 + (v & 15);
+  function banner() {
+    let t = '';
+    if (SC.gameOver) t = 'GAME OVER\n\nEnter para reintentar';
+    else if (SC.results && SC.results.t > 30) {
+      const r = SC.results;
+      const rings = bcd(r.rings), mins = bcd(r.time >> 8), secs = bcd(r.time & 0xFF);
+      t = 'SONIC HAS PASSED\n\nRINGS  ' + rings + ' x 100 = ' + rings * 100 +
+          '\nTIME   ' + mins + ':' + String(secs).padStart(2, '0') + '\n\nEnter para jugar otra vez';
+    }
+    if (t !== bannerText) { bannerText = t; bannerEl.textContent = t; bannerEl.style.display = t ? 'block' : 'none'; }
+  }
+  addEventListener('keydown', (e) => { if (e.code === 'Enter' && SC.results && SC.results.t > 30) { SC.results = null; restart(); } });
   window.addEventListener('blur', () => keys.clear());
 })();

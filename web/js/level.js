@@ -51,6 +51,7 @@
     SC.fade = 0;
     SC.levelDone = 0;
     SC.deathTimer = 0;
+    SC.results = null;
     SC.frameCount = 0;
     SC.sprites = [];
     SC.onLevelLoaded && SC.onLevelLoaded();
@@ -288,7 +289,11 @@
       SC.initLevel(rb(0xD297), rb(0xD298));
       return;
     }
-    if ((rb(0xD294) & 0x88) === 0x88) SC.levelDone = (SC.levelDone | 0) + 1;
+    if (st & 0x20) {                   // act cleared
+      if (!SC.results) SC.results = { rings: rb(0xD29A), time: (rb(0xD2C0) << 8) | rb(0xD2BF), t: 0 };
+      SC.results.t++;
+      return;
+    }
     // $16B8
     if (rb(0xD131) !== 0) return;
     if (rb(0xD15E) & 0x40) { wb(0xD2E2, (rb(0xD2E2) + 1) & 0xFF); return; }

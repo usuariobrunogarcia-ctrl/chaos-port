@@ -48,7 +48,7 @@
     }
   }
 
-  SC.render = function (camX, camY) {
+  SC.render = function (camX, camY, offs) {
     if (!blockMap) return;
     refreshTiles();
     const pal = SC.cramRGB;
@@ -65,7 +65,7 @@
       const rowOff = rw((rowTbl + by * 2) & 0xFFFF);
       for (let c = 0; c < cols; c++) {
         const tx = tx0 + c;
-        if (tx < 0 || (tx >> 2) >= 128) continue;
+        if (tx < 0) continue;   // like the original, x past the row width wraps into the next row
         const la = 0xC001 + rowOff + (tx >> 2);
         if (la > 0xCFFF) continue;
         const blk = SC.ram[la - 0xC000];
@@ -91,7 +91,9 @@
     const sp = SC.sprites;
     for (let i = sp.length - 1; i >= 0; i--) {
       const s = sp[i];
-      drawSprite(s.x - camX, s.y - camY + 1, s.t, true);
+      const d = offs && offs[s.o];
+      if (d) drawSprite(s.x + d[0] - camX, s.y + d[1] - camY + 1, s.t, true);
+      else drawSprite(s.x - camX, s.y - camY + 1, s.t, true);
     }
     // HUD (fixed screen sprites at $DB34 / $DBA8)
     for (let k = 11; k >= 0; k--) {

@@ -21,7 +21,7 @@
   #banner { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); display: none; padding: 18px 28px; background: rgba(0,0,40,.8); border: 3px solid #fc0; border-radius: 10px; text-align: center; font: bold 22px/1.6 monospace; color: #fff; text-shadow: 2px 2px #000; white-space: pre; }
   #select { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: rgba(4,14,40,.92); }
   #select h2 { margin: 0; font: bold 22px monospace; color: #fc0; text-shadow: 2px 2px #000; }
-  #select .cards { display: flex; gap: 16px; }
+  #select .cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
   #select button { width: 150px; padding: 14px 10px; border-radius: 10px; border: 3px solid #345; background: #123; color: #fff; font: bold 16px monospace; cursor: pointer; }
   #select button.on { border-color: #fc0; background: #1e3f7a; }
   #select button small { display: block; margin-top: 6px; font: 12px system-ui, sans-serif; color: #bcd; }
@@ -44,6 +44,7 @@
   <h2>ELEGÍ PERSONAJE</h2>
   <div class="cards">
     <button data-char="sonic">SONIC<small>El original</small></button>
+    <button data-char="tails">TAILS<small>Del juego original · arriba + salto = volar</small></button>
     <button data-char="knuckles">KNUCKLES<small>Salto en el aire = planear · trepa paredes</small></button>
   </div>
   <p>← → para elegir · Enter / Z para empezar</p>

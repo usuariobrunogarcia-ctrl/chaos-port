@@ -319,7 +319,7 @@
   // Draws the character with its feet at the player position.  Returns true if
   // it drew (so the renderer skips the original player sprites).
   SC.drawCharacter = function (fb, prio, W, H, camX, camY, off) {
-    if (SC.character === 'sonic' || !sheet) return false;
+    if (!SC.CHARACTERS[SC.character].custom || !sheet) return false;
     const ix = 0xD500;
     if (SC.rb(ix) === 0 || (SC.rb(ix + 4) & 0xC0)) return true;   // hidden / blinking
     const cell = sheet.cell;

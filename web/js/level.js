@@ -1,6 +1,6 @@
 /*
  * level.js - level start ($2934 and friends), the per-frame interrupt work
- * (input, camera copy, animated graphics, Sonic's art, sprites, timer) and the
+ * (input, camera copy, animated graphics, the player's art, sprites, timer) and the
  * main loop step ($16B8).
  */
 (function (G) {
@@ -12,8 +12,10 @@
   // ------------------------------------------------------------ level start
   SC.initGame = function () {
     SC.ram.fill(0);
-    wb(0xD299, 0x03);      // lives
-    wb(0xD2C8, 0x01);      // playing as Sonic
+    // $13C9: Sonic (and Knuckles, who runs on Sonic's code) or Tails, who starts with 5 lives
+    const tails = SC.character === 'tails';
+    wb(0xD2C8, tails ? 0x02 : 0x01);
+    wb(0xD299, tails ? 0x05 : 0x03);
     wb(0xD2CC, 0x00);
     SC.initLevel(0, 0);
   };
@@ -35,6 +37,10 @@
     f_2A4F();
     // $2951
     wb(0xD500, rb(0xD2C8));
+    if (rb(0xD2C8) !== 1) {          // $79DF: Tails' face for the lives counter
+      SC.page2(0x0E);
+      SC.vramFromCpu(0x0900, 0xA2A0, 0x80);
+    }
     // $79F2: block fragments art
     SC.page2(0x0E);
     const p = rw(0xA3A0 + rb(0xD297) * 2);
@@ -201,7 +207,7 @@
     if ((f & 0xA0) !== 0xA0) return;
     const idx = rb(0xD34F);
     if (idx === 0) { SC.vramFill(0, 0x200, 0); wb(0xD34E, 0); return; }
-    const e = (0x104B + idx * 4) & 0xFFFF;
+    const e = ((rb(0xD500) === 1 ? 0x104B : 0x11CF) + idx * 4) & 0xFFFF;
     const bank = rb(e), src = rw(e + 1), n = rb(e + 3);
     SC.page2(bank);
     const mirror = (f & 0x40) !== 0;

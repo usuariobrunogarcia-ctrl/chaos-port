@@ -92,7 +92,7 @@
     }
     // sprites: first in the list is on top, so draw backwards
     const sp = SC.sprites;
-    const custom = SC.character !== 'sonic' && SC.drawCharacter;
+    const custom = SC.CHARACTERS[SC.character].custom && SC.drawCharacter;
     for (let i = sp.length - 1; i >= 0; i--) {
       const s = sp[i];
       if (custom && s.o === 0) continue;

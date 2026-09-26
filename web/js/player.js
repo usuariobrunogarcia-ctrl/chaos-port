@@ -16,12 +16,14 @@
   const JOY = 0xD137, JOYP = 0xD147;
 
   // ---------------------------------------------------------------- playable characters
-  // 'sonic' runs the original code unchanged.  'knuckles' shares Sonic's engine
+  // 'sonic' and 'tails' run the original code unchanged (Tails is the game's own
+  // second character, player type 2).  'knuckles' shares Sonic's engine
   // (same ground physics) and adds his Sonic 3 moves: a lower jump, gliding
   // (press jump again in the air), wall climbing and climbing onto ledges.
   const CHARACTERS = {
     sonic: { name: 'Sonic', jump: 0xFBC0, jumpWater: 0xFCC0 },
-    knuckles: { name: 'Knuckles', jump: 0xFC18, jumpWater: 0xFD00, knuckles: true },
+    tails: { name: 'Tails', jump: 0xFBC0, jumpWater: 0xFCC0 },
+    knuckles: { name: 'Knuckles', jump: 0xFC18, jumpWater: 0xFD00, knuckles: true, custom: true },
   };
   SC.CHARACTERS = CHARACTERS;
   SC.character = 'sonic';

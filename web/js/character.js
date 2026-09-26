@@ -9,28 +9,29 @@
  *   row of the cell, body centred horizontally.  For the climbing frames he
  *   faces the wall on his right, hands touching the right edge of the body.
  *     0      idle
- *     1-4    walk cycle
- *     5-8    run cycle
- *     9-12   ball (jump / roll), rotating
- *     13     glide
- *     14     glide, turning round (facing the camera)
- *     15     drop (let go of a glide) / falling
- *     16-19  climbing a wall
- *     20-21  pulling himself up onto a ledge
- *     22     belly slide (landed from a glide)
- *     23     getting up
- *     24     hurt
+ *     1-6    walk cycle
+ *     7-10   run cycle
+ *     11-14  ball (jump / roll), rotating
+ *     15     glide
+ *     16     glide, turning round (facing the camera)
+ *     17     drop (let go of a glide) / falling
+ *     18-21  climbing a wall
+ *     22-23  pulling himself up onto a ledge
+ *     24     belly slide (landed from a glide)
+ *     25     getting up
+ *     26     hurt
  * If the file is missing, a built-in sheet in the same format is generated.
  * Frames missing from a short sheet fall back to the idle frame.
  */
 (function (G) {
   'use strict';
   const SC = G.SC;
-  const FRAMES = 25;
+  const FRAMES = 27;
   const F = {
-    idle: 0, walk: 1, run: 5, ball: 9, glide: 13, turn: 14, drop: 15,
-    climb: 16, ledge: 20, slide: 22, getup: 23, hurt: 24,
+    idle: 0, walk: 1, run: 7, ball: 11, glide: 15, turn: 16, drop: 17,
+    climb: 18, ledge: 22, slide: 24, getup: 25, hurt: 26,
   };
+  const WALK_FRAMES = 6;
   const SHEET_FILE = 'knuckles.png';
   SC.CHAR_SHEET = { frames: FRAMES, layout: F, file: SHEET_FILE };
 
@@ -129,14 +130,14 @@
     };
     // 0 idle
     standing(0, 0, 0, 0, 0, 0);
-    // 1-4 walk, 5-8 run
-    const walk = [[3, -3, 0, 2], [0, 0, -1, 0], [-3, 3, 0, -2], [0, 0, -1, 0]];
-    for (let i = 0; i < 4; i++) standing(1 + i, walk[i][0], walk[i][1], 1, walk[i][2], walk[i][3]);
+    // walk, run
+    const walk = [[3, -3, 0, 2], [1, -1, -1, 1], [-1, 1, -1, -1], [-3, 3, 0, -2], [-1, 1, -1, -1], [1, -1, -1, 1]];
+    for (let i = 0; i < WALK_FRAMES; i++) standing(F.walk + i, walk[i][0], walk[i][1], 1, walk[i][2], walk[i][3]);
     const run = [[5, -5, 0, 3], [1, -1, -1, 0], [-5, 5, 0, -3], [-1, 1, -1, 0]];
-    for (let i = 0; i < 4; i++) standing(5 + i, run[i][0], run[i][1], 3, run[i][2], run[i][3]);
-    // 9-12 ball with rotating dreadlock tips
+    for (let i = 0; i < 4; i++) standing(F.run + i, run[i][0], run[i][1], 3, run[i][2], run[i][3]);
+    // ball with rotating dreadlock tips
     for (let i = 0; i < 4; i++) {
-      const fr = 9 + i, cx = 20, cy = 28;
+      const fr = F.ball + i, cx = 20, cy = 28;
       const a = i * Math.PI / 2;
       for (let k = 0; k < 3; k++) {
         const b = a + k * 2.1;
@@ -147,9 +148,9 @@
       disc(fr, cx + Math.cos(a + 1) * 3, cy + Math.sin(a + 1) * 3, 3, 3, 'r');
       glove(fr, cx + Math.cos(a + 3) * 6, cy + Math.sin(a + 3) * 6, 1);
     }
-    // 13 glide: flat, fists forward, dreadlocks streaming back
+    // glide: flat, fists forward, dreadlocks streaming back
     {
-      const fr = 13;
+      const fr = F.glide;
       line(fr, 14, 30, 5, 32, 1.5, 'd'); shoe(fr, 4, 33, -1);
       line(fr, 14, 29, 6, 29, 1.5, 'r'); shoe(fr, 5, 30, -1);
       disc(fr, 17, 28, 7, 4, 'r');
@@ -160,9 +161,9 @@
       disc(fr, 28, 25, 3, 2, 'c');
       disc(fr, 27, 21, 2, 2, 'e'); put(fr, 28, 21, 'p');
     }
-    // 14 glide turn: facing the camera, arms spread
+    // glide turn: facing the camera, arms spread
     {
-      const fr = 14;
+      const fr = F.turn;
       line(fr, 17, 30, 10, 34, 1.5, 'd'); line(fr, 23, 30, 30, 34, 1.5, 'd');
       shoe(fr, 9, 36, -1); shoe(fr, 30, 36, 1);
       line(fr, 14, 25, 5, 23, 1.2, 'r'); line(fr, 26, 25, 35, 23, 1.2, 'r');
@@ -175,9 +176,9 @@
       put(fr, 18, 17, 'p'); put(fr, 22, 17, 'p');
       disc(fr, 20, 21, 3, 2, 'c'); put(fr, 20, 20, 'n');
     }
-    // 15 drop: arms up, legs dangling
+    // drop: arms up, legs dangling
     {
-      const fr = 15, bx = 20, by = 27;
+      const fr = F.drop, bx = 20, by = 27;
       line(fr, bx - 1, by + 4, bx - 3, 36, 1.5, 'd'); shoe(fr, bx - 3, 38, 1);
       line(fr, bx - 2, by - 3, bx - 6, by - 14, 1.2, 'r'); glove(fr, bx - 6, by - 16, -1);
       torso(fr, bx, by, 1);
@@ -185,9 +186,9 @@
       line(fr, bx + 3, by - 3, bx + 8, by - 13, 1.2, 'r'); glove(fr, bx + 8, by - 15, 1);
       head(fr, bx + 1, by - 11, 1);
     }
-    // 16-19 climbing: back view, wall on the right, hands alternating
+    // climbing: back view, wall on the right, hands alternating
     for (let i = 0; i < 4; i++) {
-      const fr = 16 + i, bx = 22, by = 25;
+      const fr = F.climb + i, bx = 22, by = 25;
       const up = [0, -3, 0, 3][i];
       line(fr, bx - 1, by + 5, bx + 3, 34 + up, 1.5, 'd'); shoe(fr, bx + 4, 36 + up, 1);
       line(fr, bx + 1, by + 5, bx + 5, 34 - up, 1.5, 'r'); shoe(fr, bx + 6, 36 - up, 1);
@@ -200,23 +201,23 @@
       line(fr, bx - 1, by - 9, bx - 2, by - 1, 2, 'r');
       line(fr, bx + 1, by - 10, bx + 1, by - 3, 2, 'd');
     }
-    // 20-21 ledge: pulling up, then kneeling on top
+    // ledge: pulling up, then kneeling on top
     {
-      let fr = 20;
+      let fr = F.ledge;
       line(fr, 22, 30, 24, 38, 1.5, 'd'); shoe(fr, 25, 38, 1);
       torso(fr, 24, 26, 1);
       line(fr, 26, 22, 33, 18, 1.2, 'r'); glove(fr, 34, 17, 1);
       head(fr, 26, 15, 1);
-      fr = 21;
+      fr = F.ledge + 1;
       line(fr, 16, 34, 22, 36, 1.5, 'd'); shoe(fr, 14, 37, -1);
       disc(fr, 22, 31, 6, 5, 'r');
       line(fr, 24, 33, 30, 37, 1.5, 'r'); shoe(fr, 31, 38, 1);
       glove(fr, 29, 34, 1);
       head(fr, 26, 22, 1);
     }
-    // 22 belly slide
+    // belly slide
     {
-      const fr = 22;
+      const fr = F.slide;
       line(fr, 14, 35, 4, 34, 1.5, 'd'); shoe(fr, 3, 35, -1);
       disc(fr, 18, 35, 8, 3.5, 'r');
       line(fr, 23, 35, 34, 34, 1.2, 'r'); glove(fr, 35, 35, 1);
@@ -225,18 +226,18 @@
       disc(fr, 29, 33, 3, 2, 'c');
       disc(fr, 28, 29, 1.5, 2, 'e'); put(fr, 29, 29, 'p');
     }
-    // 23 getting up: crouched
+    // getting up: crouched
     {
-      const fr = 23, bx = 20, by = 31;
+      const fr = F.getup, bx = 20, by = 31;
       line(fr, bx - 2, by + 3, bx - 5, 37, 1.5, 'd'); shoe(fr, bx - 5, 38, 1);
       torso(fr, bx, by, 1);
       line(fr, bx + 2, by + 3, bx + 5, 37, 1.5, 'r'); shoe(fr, bx + 6, 38, 1);
       glove(fr, bx + 6, by + 3, 1);
       head(fr, bx + 2, by - 10, 1);
     }
-    // 24 hurt
+    // hurt
     {
-      const fr = 24, bx = 20, by = 26;
+      const fr = F.hurt, bx = 20, by = 26;
       line(fr, bx - 1, by + 4, bx - 6, 35, 1.5, 'd'); shoe(fr, bx - 6, 37, -1);
       line(fr, bx + 1, by + 4, bx + 6, 35, 1.5, 'r'); shoe(fr, bx + 7, 37, 1);
       line(fr, bx - 3, by - 2, bx - 10, by - 6, 1.2, 'r'); glove(fr, bx - 11, by - 7, -1);
@@ -296,7 +297,7 @@
     if (flags & 0x01) return F.drop;                                            // in the air
     if (vx === 0) return F.idle;
     if (vx >= 0x0500) return F.run + ((animT >> 2) & 3);
-    return F.walk + ((animT >> (vx >= 0x0280 ? 2 : 3)) & 3);
+    return F.walk + ((animT >> (vx >= 0x0280 ? 2 : 3)) % WALK_FRAMES);
   }
   // Called once per logic frame.
   SC.characterTick = function () { animT = (animT + 1) & 0xFFFF; };

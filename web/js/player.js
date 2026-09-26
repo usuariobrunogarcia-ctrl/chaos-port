@@ -16,40 +16,218 @@
   const JOY = 0xD137, JOYP = 0xD147;
 
   // ---------------------------------------------------------------- playable characters
-  // 'sonic' runs the original code unchanged.  'nimbo' is an original character
-  // (a flying squirrel) that shares Sonic's engine: same ground physics, a
-  // slightly lower jump, and a glide when the button is pressed again in the air.
+  // 'sonic' runs the original code unchanged.  'knuckles' shares Sonic's engine
+  // (same ground physics) and adds his Sonic 3 moves: a lower jump, gliding
+  // (press jump again in the air), wall climbing and climbing onto ledges.
   const CHARACTERS = {
-    sonic: { name: 'Sonic', jump: 0xFBC0, jumpWater: 0xFCC0, glide: false },
-    nimbo: { name: 'Nimbo', jump: 0xFC18, jumpWater: 0xFD00, glide: true },
+    sonic: { name: 'Sonic', jump: 0xFBC0, jumpWater: 0xFCC0 },
+    knuckles: { name: 'Knuckles', jump: 0xFC18, jumpWater: 0xFD00, knuckles: true },
   };
   SC.CHARACTERS = CHARACTERS;
   SC.character = 'sonic';
-  SC.gliding = false;
-  const GLIDE_FALL = 0x0060;     // max fall speed while gliding (8.8 fixed point, px/frame)
-  const GLIDE_MIN_VX = 0x0100;   // keeps drifting forward while gliding
   const charDef = () => CHARACTERS[SC.character] || CHARACTERS.sonic;
   const jumpVel = () => (rb(0xD443) ? charDef().jumpWater : charDef().jump);
-  // Called in the jump state before movement.  Returns true while gliding.
-  function glide() {
-    if (!charDef().glide) return false;
-    if (!SC.gliding) {
-      // start: button pressed again once the jump has been released
-      if (!(rb(JOYP) & 0x30) || rb(0xD3B2) !== 0x20) return false;
-      SC.gliding = true;
-      wb(0xDE04, 0xAC);
-    } else if (!(rb(JOY) & 0x30)) {
-      SC.gliding = false;
+
+  // ---------------------------------------------------------------- Knuckles
+  // Speeds are Sonic 3's scaled to Sonic Chaos (top speed 4 px/frame against 6).
+  // All values are 8.8 fixed point, px/frame.
+  const GLIDE_START = 0x02A0;    // glide speed when it starts
+  const GLIDE_ACCEL = 0x0003;    // added every frame while not turning
+  const GLIDE_MAX = 0x0600;
+  const GLIDE_FALL = 0x0055;     // vertical speed the glide settles at
+  const GLIDE_FALL_STEP = 0x0010;
+  const GLIDE_TURN = 4;          // turning angle step (128 = half turn)
+  const CLIMB_UP = 0x00C0, CLIMB_DOWN = 0x0100;
+  const WALLJUMP_X = 0x0280, WALLJUMP_Y = 0xFD00;
+  const SLIDE_DECEL = 0x0010, GETUP_FRAMES = 12;
+  // mode: null | 'glide' | 'drop' (let go of a glide) | 'climb' | 'ledge' |
+  //       'slide' (landed from a glide) | 'getup'
+  const K = { mode: null, t: 0, dir: 1, speed: 0, ang: 0, target: 0, climbT: 0 };
+  SC.knux = K;
+  SC.resetCharacter = () => { K.mode = null; K.t = 0; };
+  const AIR_MODES = { glide: 1, drop: 1, climb: 1, ledge: 1 };
+
+  // y += v (16.8 fixed point, sign-extended), like the end of $4097
+  function addY(hl) {
+    const c = hl & 0x8000 ? 0xFF : 0;
+    const sum = rw(0xD513) + hl;
+    ww(0xD513, sum & 0xFFFF);
+    wb(0xD515, (c + (sum > 0xFFFF ? 1 : 0) + xb(21)) & 0xFF);
+  }
+  // Is the terrain solid dx pixels right of the player and dy below his feet?
+  function solidAt(dx, dy) {
+    SC.sensor(dx & 0xFFFF, dy & 0xFFFF);
+    if (!(rb(0xD364) & 0x80)) return false;
+    const h = rb(0xD368);
+    if (h & 0x40) return (h & 0x3F) !== 0;
+    return (rb(0xD35A) & 0x1F) + (h & 0x3F) >= 0x20;
+  }
+  const wallBit = (dir) => (dir > 0 ? 2 : 3);
+
+  // Called in the jump state (0A) before anything else.  Returns true when it
+  // has done the whole frame.
+  function knuckles() {
+    if (!charDef().knuckles) return false;
+    switch (K.mode) {
+      case null:
+        // glide: button pressed again once the jump has been released
+        if (!(rb(JOYP) & 0x30) || rb(0xD3B2) !== 0x20) return false;
+        startGlide();
+        return glideStep();
+      case 'glide': return glideStep();
+      case 'climb': return climbStep();
+      case 'ledge': return ledgeStep();
+      default: return false;   // 'drop': plain falling
+    }
+  }
+  function startGlide() {
+    K.mode = 'glide';
+    K.dir = xbit(4, 4) ? -1 : 1;
+    K.target = K.ang = K.dir > 0 ? 0 : 128;
+    K.speed = Math.max(GLIDE_START, abs16(rw(0xD516)));
+    if (SC.s16(rw(0xD518)) < 0) ww(0xD518, 0);
+    ww(0xD373, 0x0700);          // let $402A move faster than the running cap
+    xset(3, 0); xset(3, 1);      // in the air, attacking
+    wb(0xDE04, 0xAC);
+  }
+  function glideStep() {
+    if (!(rb(JOY) & 0x30)) {
+      // let go: drop with a quarter of the speed
+      K.mode = 'drop';
+      ww(0xD516, (SC.s16(rw(0xD516)) >> 2) & 0xFFFF);
+      ww(0xD373, 0x0400);
+      xres(3, 1);
       return false;
     }
-    const vy = SC.s16(rw(0xD518));
-    if (vy > GLIDE_FALL) ww(0xD518, GLIDE_FALL);
-    let vx = SC.s16(rw(0xD516));
-    const left = (rb(0xD504) & 0x10) !== 0;
-    if (!left && vx < GLIDE_MIN_VX) vx = GLIDE_MIN_VX;
-    if (left && vx > -GLIDE_MIN_VX) vx = -GLIDE_MIN_VX;
+    const joy = rb(JOY);
+    if (joy & 4) K.target = 128; else if (joy & 8) K.target = 0;
+    if (K.ang !== K.target) {
+      K.ang += K.ang < K.target ? GLIDE_TURN : -GLIDE_TURN;
+    } else if (K.speed < GLIDE_MAX) {
+      K.speed = Math.min(GLIDE_MAX, K.speed + GLIDE_ACCEL);
+    }
+    const vx = Math.round(K.speed * Math.cos(K.ang * Math.PI / 128));
+    if (K.ang < 64) xres(4, 4); else if (K.ang > 64) xset(4, 4);
+    let vy = SC.s16(rw(0xD518));
+    vy = vy < GLIDE_FALL ? Math.min(GLIDE_FALL, vy + GLIDE_FALL_STEP) : Math.max(GLIDE_FALL, vy - GLIDE_FALL_STEP);
+    ww(0xD518, vy & 0xFFFF);
     ww(0xD516, vx & 0xFFFF);
+    ww(0xD375, 0); ww(0xD377, 0);
+    call(0x4B46);
+    f_401A();
+    if (screenClamp()) K.speed = GLIDE_START;
+    f_402A();
+    addY(rw(0xD518));
+    call(0x690B);
+    f_48BC();
+    if (rb(0xD502) !== 0x0A) { endMode(); return true; }       // hurt, spring...
+    if (xbit(35, 1)) {
+      // landed: belly slide
+      K.mode = 'slide';
+      ww(0xD516, vx & 0xFFFF);
+      f_45CE();
+      return true;
+    }
+    const dir = vx > 0 ? 1 : vx < 0 ? -1 : 0;
+    if (dir && xbit(34, wallBit(dir))) startClimb(dir);
     return true;
+  }
+  function endMode() {
+    if (K.mode === 'glide') ww(0xD373, 0x0400);
+    K.mode = null;
+  }
+  function startClimb(dir) {
+    K.mode = 'climb';
+    K.dir = dir;
+    K.climbT = 0;
+    ww(0xD516, 0); ww(0xD518, 0); ww(0xD375, 0);
+    ww(0xD373, 0x0400);
+    xset(3, 0); xres(3, 1);
+    if (dir > 0) xres(4, 4); else xset(4, 4);
+    wb(0xDE04, 0xA1);
+  }
+  function climbStep() {
+    call(0x4B46);
+    f_401A();
+    if (rb(JOYP) & 0x30) {
+      // jump away from the wall
+      K.mode = null;
+      if (K.dir > 0) xset(4, 4); else xres(4, 4);
+      ww(0xD516, (K.dir > 0 ? -WALLJUMP_X : WALLJUMP_X) & 0xFFFF);
+      ww(0xD518, WALLJUMP_Y);
+      xset(3, 0); xset(3, 1);
+      wb(0xD3B2, 0x20);
+      wb(0xDE04, 0xA2);
+      return false;
+    }
+    const joy = rb(JOY);
+    const vy = joy & 1 ? -CLIMB_UP : joy & 2 ? CLIMB_DOWN : 0;
+    if (vy) K.climbT++;
+    ww(0xD516, 0);
+    ww(0xD518, vy & 0xFFFF);
+    addY(vy & 0xFFFF);
+    ww(0xD511, (rw(0xD511) + K.dir) & 0xFFFF);   // lean on the wall so it pushes back
+    call(0x690B);
+    f_48BC();
+    if (rb(0xD502) !== 0x0A) { K.mode = null; return true; }
+    if (xbit(35, 1)) {
+      // climbed down to the floor
+      K.mode = null;
+      ww(0xD518, 0);
+      f_45CE();
+      return true;
+    }
+    if (!xbit(34, wallBit(K.dir))) {
+      ww(0xD511, (rw(0xD511) - K.dir) & 0xFFFF);
+      if (vy < 0 && solidAt(K.dir * 12, -4)) {
+        K.mode = 'ledge'; K.t = 0;
+      } else {
+        K.mode = 'drop';
+        ww(0xD518, 0);
+      }
+    }
+    return true;
+  }
+  // Pull up onto the top of the wall: rise until the feet clear it, then step over.
+  function ledgeStep() {
+    K.t++;
+    ww(0xD516, 0); ww(0xD518, 0);
+    if (K.t <= 32 && solidAt(K.dir * 12, -1)) {
+      ww(0xD514, (rw(0xD514) - 1) & 0xFFFF);
+    } else if (K.t <= 32 + 14) {
+      if (K.t < 32) K.t = 32;
+      if (!solidAt(K.dir * 12, -8)) ww(0xD511, (rw(0xD511) + K.dir) & 0xFFFF);
+    } else {
+      K.mode = null;
+      wb(0xD510, 0);
+      ww(0xD518, 0x0100);
+      xset(3, 0); xres(3, 1);
+      wb(0xD3B2, 0x21);
+    }
+    f_48BC();
+    if (rb(0xD502) !== 0x0A) K.mode = null;
+    return true;
+  }
+  // Called before the state handler: belly slide after landing from a glide.
+  function knucklesGround() {
+    if (K.mode && AIR_MODES[K.mode] && rb(0xD501) !== 0x0A) endMode();
+    if (K.mode !== 'slide' && K.mode !== 'getup') return;
+    const st = rb(0xD502);
+    if (st !== 0x01 && st !== 0x05 && st !== 0x06) { K.mode = null; return; }
+    wb(JOY, rb(JOY) & 0xF0);        // no steering; buttons stay held so they do not re-trigger
+    wb(JOYP, rb(JOYP) & 0xC0);
+    if (K.mode === 'getup') {
+      if (++K.t >= GETUP_FRAMES) K.mode = null;
+      return;
+    }
+    let vx = SC.s16(rw(0xD516));
+    if (Math.abs(vx) <= SLIDE_DECEL) {
+      ww(0xD516, 0);
+      K.mode = 'getup'; K.t = 0;
+      return;
+    }
+    vx -= Math.sign(vx) * SLIDE_DECEL;
+    ww(0xD516, vx & 0xFFFF);
   }
 
   // ---------------------------------------------------------------- $361D
@@ -57,7 +235,7 @@
   function f_361D() {
     R.ix = 0xD500;
     if (rb(0xD500) === 0) return;
-    if (SC.gliding && rb(0xD501) !== 0x0A) SC.gliding = false;
+    if (charDef().knuckles) knucklesGround();
     xres(4, 7);
     if (rb(0xD44B) & 0x40) f_4984();
     wb(0xD44F, 0xFF);
@@ -234,16 +412,14 @@
   }
   // $3901: state 0A jumping (variable height: keeps rising while button held)
   function f_3901() {
-    if (glide()) {
-      // gliding: no jump sustain
-    } else if (!(rb(JOY) & 0x30)) {
+    if (knuckles()) return;
+    if (!(rb(JOY) & 0x30)) {
       wb(0xD3B2, 0x20);
     } else {
       wb(0xD3B2, (rb(0xD3B2) + 1) & 0xFF);
       if (rb(0xD3B2) < 0x0E) ww(0xD518, jumpVel());
     }
     f_3FEF();
-    if (SC.gliding && rb(0xD502) !== 0x0A) SC.gliding = false;
     if (rb(0xD502) !== 0x0A) return;
     if (!xbit(35, 1)) return;
     if (rb(0xD36C) !== 0x0D) return f_45CE();
@@ -755,7 +931,7 @@
     xset(3, 0); xset(3, 1);
     xres(36, 0);
     xs(2, 0x0A);
-    SC.gliding = false;
+    K.mode = null;
     ww(0xD518, jumpVel());
     ww(0xD514, rw(0xD514) - 1);
     wb(0xD289, 0x60);

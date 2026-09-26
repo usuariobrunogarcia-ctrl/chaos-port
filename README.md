@@ -24,13 +24,17 @@ Controles: flechas/WASD, salto con Z / X / Espacio. Abajo + salto = spin dash, a
 Al empezar se elige personaje (← → y Enter, o tocando la tarjeta):
 
 - **Sonic** — el original, sin cambios.
-- **Nimbo** — personaje original (una ardilla voladora) que usa el mismo motor: misma física en el suelo, salto un poco más bajo (unos 85 px contra 96) y, si presionás salto otra vez en el aire, **planea** mientras mantengas el botón (cae lento y sigue avanzando).
+- **Knuckles** — al estilo de Sonic 3, sobre el mismo motor (misma física en el suelo):
+  - salta un poco menos (unos 85 px contra 96);
+  - **planea** si presionás salto otra vez en el aire, mientras mantengas el botón. Acelera de a poco, gira con ← → y rompe enemigos de frente. Si soltás el botón, cae;
+  - si choca una pared planeando, **se agarra y trepa** (↑ ↓). Arriba de todo sube al borde, y con salto se impulsa lejos de la pared;
+  - si aterriza planeando, **se desliza de panza** y se levanta.
 
-La lógica está en `web/js/player.js` (`SC.CHARACTERS`) y el dibujo en `web/js/character.js`.
+La lógica está en `web/js/player.js` (`SC.CHARACTERS` y la sección *Knuckles*) y el dibujo en `web/js/character.js`.
 
-### Hoja de sprites propia
+### Hoja de sprites
 
-Si existe `web/custom_character.png`, se usa en lugar del arte incluido. Formato: una fila de celdas de 32×32, fondo transparente, mirando a la derecha, pies en la última fila de la celda:
+Si existe `web/knuckles.png`, se usa en lugar del arte incluido. Formato: una fila de celdas cuadradas (el lado de la celda es el alto de la imagen, por ejemplo 40×40 o 48×48), fondo transparente, mirando a la derecha, pies en la última fila de la celda y cuerpo centrado:
 
 | Celdas | Animación |
 | --- | --- |
@@ -38,10 +42,16 @@ Si existe `web/custom_character.png`, se usa en lugar del arte incluido. Formato
 | 1–4 | caminar |
 | 5–8 | correr |
 | 9–12 | bola (salto / rodar) |
-| 13–14 | planear |
-| 15 | golpeado |
+| 13 | planear |
+| 14 | planear girando (de frente) |
+| 15 | caer (soltó el planeo) |
+| 16–19 | trepar (pared a la derecha) |
+| 20–21 | subir al borde |
+| 22 | deslizarse de panza |
+| 23 | levantarse |
+| 24 | golpeado |
 
-Para partir de una plantilla: `node tools/export_character.js web/custom_character.png` exporta el arte incluido en ese formato.
+Las celdas que falten usan la 0. Para partir de una plantilla: `node tools/export_character.js web/knuckles.png` exporta el arte incluido en ese formato.
 
 ## Estructura
 
@@ -50,7 +60,7 @@ Para partir de una plantilla: `node tools/export_character.js web/custom_charact
 - `web/js/objects*.js`, `spawner.js`, `bank12.js` — sistema de objetos y scripts de animación.
 - `web/js/level.js` — carga del nivel, trabajo de VBlank, bucle principal.
 - `web/js/vdp.js`, `render.js` — VRAM y renderizador.
-- `web/js/character.js` — gráficos del personaje original y carga de `custom_character.png`.
+- `web/js/character.js` — gráficos de Knuckles y carga de `knuckles.png`.
 - `tools/` — herramientas de verificación e ingeniería inversa (emulador de referencia en `tools/re`).
 
 Pendiente: sonido y música.

@@ -1,10 +1,10 @@
-// Writes the built-in sheet of the original character (Nimbo) as a PNG template
-// for custom_character.png:  node tools/export_character.js out.png [scale]
+// Writes the built-in Knuckles sheet as a PNG template for web/knuckles.png:
+//   node tools/export_character.js out.png [scale]
 const fs = require('fs'), path = require('path'), vm = require('vm'), zlib = require('zlib');
 global.SC = {};
 vm.runInThisContext(fs.readFileSync(path.join(__dirname, '../web/js/core.js'), 'utf8'));
 vm.runInThisContext(fs.readFileSync(path.join(__dirname, '../web/js/character.js'), 'utf8'));
-const out = process.argv[2] || 'custom_character.png', scale = +(process.argv[3] || 1);
+const out = process.argv[2] || 'knuckles.png', scale = +(process.argv[3] || 1);
 const s = SC.builtinCharacterSheet();
 const W = s.w * scale, H = s.h * scale;
 const raw = Buffer.alloc((W * 4 + 1) * H);

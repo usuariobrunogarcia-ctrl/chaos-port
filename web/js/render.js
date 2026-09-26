@@ -93,15 +93,24 @@
     // sprites: first in the list is on top, so draw backwards
     const sp = SC.sprites;
     const custom = SC.CHARACTERS[SC.character].custom && SC.drawCharacter;
+    // in a loop the player's upright frame is drawn rotated instead (rotation.js)
+    const ang = !custom && SC.loopAngle ? SC.loopAngle() : null;
+    const rotate = ang !== null && sp.some((s) => s.o === 0);
     for (let i = sp.length - 1; i >= 0; i--) {
       const s = sp[i];
-      if (custom && s.o === 0) continue;
+      if ((custom || rotate) && s.o === 0) continue;
       const d = offs && offs[s.o];
       if (d) drawSprite(s.x + d[0] - camX, s.y + d[1] - camY + 1, s.t, true);
       else drawSprite(s.x - camX, s.y - camY + 1, s.t, true);
     }
     // the original character is drawn over the other sprites, like the player slot
     if (custom) SC.drawCharacter(fb, prio, W, H, camX, camY, offs && offs[0]);
+    else if (rotate) {
+      const d = offs && offs[0];
+      const b = SC.playerFrameBitmap(rb(0xD500), SC.loopRunFrame());
+      SC.drawRotated(fb, prio, W, H, b, rw(0xD511) + (d ? d[0] : 0) - camX, rw(0xD514) + (d ? d[1] : 0) - camY,
+        ang, (rb(0xD504) & 0x10) !== 0, (v) => pal[16 + v]);
+    }
     // HUD (fixed screen sprites at $DB34 / $DBA8)
     for (let k = 11; k >= 0; k--) {
       const y = rb(0xDB34 + k);

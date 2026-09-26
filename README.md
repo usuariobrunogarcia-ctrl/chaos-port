@@ -4,6 +4,7 @@ Recreación del primer nivel de Sonic Chaos (Master System) en HTML/JavaScript.
 
 - **Los assets salen de tu ROM**: gráficos, mapa, colisiones, paletas, objetos y animaciones se extraen en el navegador desde `SonicChaos.sms` (CRC32 `AEDF3BDF`). El repositorio no incluye gráficos extraídos.
 - **Se siente igual**: la lógica (física de Sonic, colisiones, cámara, objetos, aparición de objetos) está portada rutina por rutina desde el código Z80 original y se verificó cuadro por cuadro contra la ROM corriendo en un emulador (`tools/lockstep.js`, `tools/frame_check.js`).
+- **Rotación suave en los loopings**: el original usa cuadros prerrotados por pasos. Acá se dibuja el cuadro normal de correr rotado según la tangente exacta de la trayectoria (escalado con Scale2x antes de rotar), centrado donde el original pone los suyos. Vale para los tres personajes y solo cambia el dibujo, no la lógica (`web/js/rotation.js`).
 - **Pantalla ancha**: 224 líneas de alto y el ancho según la ventana (hasta 512). Las ventanas de actividad de objetos, la cámara y los límites de pantalla están adaptados.
 
 ## Cómo jugar
@@ -65,6 +66,7 @@ Las celdas que falten usan la 0. Para cambiar qué cuadro de la hoja original va
 - `web/js/objects*.js`, `spawner.js`, `bank12.js` — sistema de objetos y scripts de animación.
 - `web/js/level.js` — carga del nivel, trabajo de VBlank, bucle principal.
 - `web/js/vdp.js`, `render.js` — VRAM y renderizador.
+- `web/js/rotation.js` — rotación de los personajes en los loopings.
 - `web/js/character.js` — animación de Knuckles y carga de `knuckles.png`.
 - `tools/` — herramientas de verificación e ingeniería inversa (emulador de referencia en `tools/re`).
 

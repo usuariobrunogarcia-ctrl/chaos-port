@@ -328,6 +328,13 @@
     lastFrame = fr;
     const flip = (SC.rb(ix + 4) & 0x10) !== 0;
     const ox = off ? off[0] : 0, oy = off ? off[1] : 0;
+    // in a loop: rotate the frame to the path's tangent (rotation.js)
+    const ang = SC.loopAngle ? SC.loopAngle() : null;
+    if (ang !== null) {
+      SC.drawRotated(fb, prio, W, H, cellBitmap(fr), SC.rw(ix + 17) + ox - 2 - camX, SC.rw(ix + 20) + oy - camY,
+        ang, flip, (v) => v);
+      return true;
+    }
     const x0 = SC.rw(ix + 17) + ox - 2 - (cell >> 1) - camX;
     const y0 = SC.rw(ix + 20) + oy + 1 - cell - camY;
     const sw = sheet.w, px = sheet.px;
@@ -346,5 +353,20 @@
     }
     return true;
   };
+  // Cell `fr` as a 2x scaled bitmap around the drawing pivot (feet centre), for rotation.
+  let cellCache = new Map(), cellSheet = null;
+  function cellBitmap(fr) {
+    if (cellSheet !== sheet) { cellSheet = sheet; cellCache = new Map(); }
+    if (cellCache.has(fr)) return cellCache.get(fr);
+    const cell = sheet.cell, px = new Uint32Array(cell * cell);
+    for (let y = 0; y < cell; y++)
+      for (let x = 0; x < cell; x++) {
+        const c = sheet.px[y * sheet.w + fr * cell + x];
+        if ((c >>> 24) >= 128) px[y * cell + x] = c | 0xFF000000;
+      }
+    const b = SC.scale2x({ x0: -(cell >> 1), y0: 1 - cell, w: cell, h: cell, px });
+    cellCache.set(fr, b);
+    return b;
+  }
   SC.characterFrame = () => lastFrame;
 })(typeof window !== 'undefined' ? window : globalThis);

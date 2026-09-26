@@ -19,6 +19,13 @@
   #touch div { display: flex; gap: 8px; pointer-events: auto; }
   #touch button { width: 56px; height: 56px; border-radius: 50%; border: 0; background: rgba(255,255,255,.18); color: #fff; font-size: 18px; }
   #banner { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); display: none; padding: 18px 28px; background: rgba(0,0,40,.8); border: 3px solid #fc0; border-radius: 10px; text-align: center; font: bold 22px/1.6 monospace; color: #fff; text-shadow: 2px 2px #000; white-space: pre; }
+  #select { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: rgba(4,14,40,.92); }
+  #select h2 { margin: 0; font: bold 22px monospace; color: #fc0; text-shadow: 2px 2px #000; }
+  #select .cards { display: flex; gap: 16px; }
+  #select button { width: 150px; padding: 14px 10px; border-radius: 10px; border: 3px solid #345; background: #123; color: #fff; font: bold 16px monospace; cursor: pointer; }
+  #select button.on { border-color: #fc0; background: #1e3f7a; }
+  #select button small { display: block; margin-top: 6px; font: 12px system-ui, sans-serif; color: #bcd; }
+  #select p { margin: 0; color: #9ab; font-size: 13px; }
   @media (pointer: coarse) { #touch { display: flex; } }
 </style>
 </head>
@@ -33,6 +40,14 @@
   Controles: flechas / WASD para moverse · Z, X o Espacio para saltar · abajo + salto = spin dash · arriba + salto = super peel out. Gamepad compatible.</small>
 </div></div>
 <div id="banner"></div>
+<div id="select">
+  <h2>ELEGÍ PERSONAJE</h2>
+  <div class="cards">
+    <button data-char="sonic">SONIC<small>El original</small></button>
+    <button data-char="nimbo">NIMBO<small>Salta un poco menos · salto en el aire = planear</small></button>
+  </div>
+  <p>← → para elegir · Enter / Z para empezar</p>
+</div>
 <div id="touch">
   <div><button data-k="ArrowLeft">◀</button><button data-k="ArrowDown">▼</button><button data-k="ArrowUp">▲</button><button data-k="ArrowRight">▶</button></div>
   <div><button data-k="KeyZ">A</button></div>
@@ -50,6 +65,7 @@
 <script src="js/vdp.js"></script>
 <script src="js/level.js"></script>
 <script src="js/render.js"></script>
+<script src="js/character.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

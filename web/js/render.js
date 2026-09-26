@@ -92,12 +92,16 @@
     }
     // sprites: first in the list is on top, so draw backwards
     const sp = SC.sprites;
+    const custom = SC.character !== 'sonic' && SC.drawCharacter;
     for (let i = sp.length - 1; i >= 0; i--) {
       const s = sp[i];
+      if (custom && s.o === 0) continue;
       const d = offs && offs[s.o];
       if (d) drawSprite(s.x + d[0] - camX, s.y + d[1] - camY + 1, s.t, true);
       else drawSprite(s.x - camX, s.y - camY + 1, s.t, true);
     }
+    // the original character is drawn over the other sprites, like the player slot
+    if (custom) SC.drawCharacter(fb, prio, W, H, camX, camY, offs && offs[0]);
     // HUD (fixed screen sprites at $DB34 / $DBA8)
     for (let k = 11; k >= 0; k--) {
       const y = rb(0xDB34 + k);

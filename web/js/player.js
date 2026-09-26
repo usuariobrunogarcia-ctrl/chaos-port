@@ -15,11 +15,49 @@
   // Joypad bits in $D137 (held) / $D147 (pressed): 0 up, 1 down, 2 left, 3 right, 4 button1, 5 button2
   const JOY = 0xD137, JOYP = 0xD147;
 
+  // ---------------------------------------------------------------- playable characters
+  // 'sonic' runs the original code unchanged.  'nimbo' is an original character
+  // (a flying squirrel) that shares Sonic's engine: same ground physics, a
+  // slightly lower jump, and a glide when the button is pressed again in the air.
+  const CHARACTERS = {
+    sonic: { name: 'Sonic', jump: 0xFBC0, jumpWater: 0xFCC0, glide: false },
+    nimbo: { name: 'Nimbo', jump: 0xFC18, jumpWater: 0xFD00, glide: true },
+  };
+  SC.CHARACTERS = CHARACTERS;
+  SC.character = 'sonic';
+  SC.gliding = false;
+  const GLIDE_FALL = 0x0060;     // max fall speed while gliding (8.8 fixed point, px/frame)
+  const GLIDE_MIN_VX = 0x0100;   // keeps drifting forward while gliding
+  const charDef = () => CHARACTERS[SC.character] || CHARACTERS.sonic;
+  const jumpVel = () => (rb(0xD443) ? charDef().jumpWater : charDef().jump);
+  // Called in the jump state before movement.  Returns true while gliding.
+  function glide() {
+    if (!charDef().glide) return false;
+    if (!SC.gliding) {
+      // start: button pressed again once the jump has been released
+      if (!(rb(JOYP) & 0x30) || rb(0xD3B2) !== 0x20) return false;
+      SC.gliding = true;
+      wb(0xDE04, 0xAC);
+    } else if (!(rb(JOY) & 0x30)) {
+      SC.gliding = false;
+      return false;
+    }
+    const vy = SC.s16(rw(0xD518));
+    if (vy > GLIDE_FALL) ww(0xD518, GLIDE_FALL);
+    let vx = SC.s16(rw(0xD516));
+    const left = (rb(0xD504) & 0x10) !== 0;
+    if (!left && vx < GLIDE_MIN_VX) vx = GLIDE_MIN_VX;
+    if (left && vx > -GLIDE_MIN_VX) vx = -GLIDE_MIN_VX;
+    ww(0xD516, vx & 0xFFFF);
+    return true;
+  }
+
   // ---------------------------------------------------------------- $361D
   // Player object update (called once per frame from the main loop).
   function f_361D() {
     R.ix = 0xD500;
     if (rb(0xD500) === 0) return;
+    if (SC.gliding && rb(0xD501) !== 0x0A) SC.gliding = false;
     xres(4, 7);
     if (rb(0xD44B) & 0x40) f_4984();
     wb(0xD44F, 0xFF);
@@ -196,13 +234,16 @@
   }
   // $3901: state 0A jumping (variable height: keeps rising while button held)
   function f_3901() {
-    if (!(rb(JOY) & 0x30)) {
+    if (glide()) {
+      // gliding: no jump sustain
+    } else if (!(rb(JOY) & 0x30)) {
       wb(0xD3B2, 0x20);
     } else {
       wb(0xD3B2, (rb(0xD3B2) + 1) & 0xFF);
-      if (rb(0xD3B2) < 0x0E) ww(0xD518, rb(0xD443) ? 0xFCC0 : 0xFBC0);
+      if (rb(0xD3B2) < 0x0E) ww(0xD518, jumpVel());
     }
     f_3FEF();
+    if (SC.gliding && rb(0xD502) !== 0x0A) SC.gliding = false;
     if (rb(0xD502) !== 0x0A) return;
     if (!xbit(35, 1)) return;
     if (rb(0xD36C) !== 0x0D) return f_45CE();
@@ -714,7 +755,8 @@
     xset(3, 0); xset(3, 1);
     xres(36, 0);
     xs(2, 0x0A);
-    ww(0xD518, rb(0xD443) ? 0xFCC0 : 0xFBC0);
+    SC.gliding = false;
+    ww(0xD518, jumpVel());
     ww(0xD514, rw(0xD514) - 1);
     wb(0xD289, 0x60);
     xres(34, 1);

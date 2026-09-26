@@ -17,7 +17,7 @@
     KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8,
     KeyZ: 16, KeyX: 32, Space: 16, KeyJ: 16, KeyK: 32,
   };
-  addEventListener('keydown', (e) => { if (KEYMAP[e.code] !== undefined) { keys.add(e.code); e.preventDefault(); } if (e.code === 'Enter' && SC.gameOver) restart(); });
+  addEventListener('keydown', (e) => { if (KEYMAP[e.code] !== undefined) { keys.add(e.code); e.preventDefault(); } if (e.code === 'Enter' && SC.gameOver && !SC.selecting) showSelect(); });
   addEventListener('keyup', (e) => { keys.delete(e.code); });
   function joy() {
     if (SC.inputOverride) return SC.inputOverride();
@@ -73,14 +73,45 @@
     SC.setView(w, VIEW_H);
     SC.renderSetup(canvas, w, VIEW_H);
     fit();
+    if (SC.loadCharacterSheet) SC.loadCharacterSheet('custom_character.png');
     restart();
     overlay.style.display = 'none';
+    showSelect();
     if (!running) { running = true; requestAnimationFrame(loop); }
   }
   function restart() {
     SC.gameOver = false;
+    SC.results = null;
+    SC.gliding = false;
     SC.initGame();
   }
+
+  // ---- character select ----
+  const selectEl = document.getElementById('select');
+  const cards = [...selectEl.querySelectorAll('[data-char]')];
+  let choice = 'sonic';
+  try { choice = localStorage.getItem('chaosCharacter') || 'sonic'; } catch (e) { /* ignore */ }
+  if (!SC.CHARACTERS[choice]) choice = 'sonic';
+  SC.selecting = false;
+  function markChoice() { cards.forEach((b) => b.classList.toggle('on', b.dataset.char === choice)); }
+  function showSelect() { SC.selecting = true; markChoice(); selectEl.style.display = 'flex'; }
+  function pick(c) {
+    choice = c;
+    try { localStorage.setItem('chaosCharacter', c); } catch (e) { /* ignore */ }
+    SC.character = c;
+    selectEl.style.display = 'none';
+    SC.selecting = false;
+    keys.clear();
+    restart();
+  }
+  cards.forEach((b) => b.addEventListener('click', () => pick(b.dataset.char)));
+  addEventListener('keydown', (e) => {
+    if (!SC.selecting) return;
+    const i = cards.findIndex((b) => b.dataset.char === choice);
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') { choice = cards[(i + cards.length - 1) % cards.length].dataset.char; markChoice(); }
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') { choice = cards[(i + 1) % cards.length].dataset.char; markChoice(); }
+    if (e.code === 'Enter' || e.code === 'KeyZ' || e.code === 'Space') { e.preventDefault(); e.stopImmediatePropagation(); pick(choice); }
+  }, true);
   document.getElementById('file').addEventListener('change', (e) => {
     const f = e.target.files[0];
     if (f) f.arrayBuffer().then(startWithRom);
@@ -120,6 +151,7 @@
     snapObjects(curObj);
     SC.vblank(joy());
     if (!SC.gameOver) SC.logic();
+    if (SC.characterTick) SC.characterTick();
   }
   const offs = [];
   function lerp(a, b, t) {
@@ -132,7 +164,7 @@
     acc += dt;
     last = now;
     let n = 0;
-    while (acc >= STEP && n < 5) { tick(); acc -= STEP; n++; }
+    while (acc >= STEP && n < 5) { if (!SC.selecting) tick(); acc -= STEP; n++; }
     if (acc > STEP) acc = STEP;
     let cx = SC.rw(0xD174), cy = SC.rw(0xD176), o = null;
     if (frameAvg < STEP * 0.85) {
@@ -153,15 +185,15 @@
   const bcd = (v) => (v >> 4) * 10 + (v & 15);
   function banner() {
     let t = '';
-    if (SC.gameOver) t = 'GAME OVER\n\nEnter para reintentar';
+    if (SC.gameOver) t = 'GAME OVER\n\nEnter para volver a elegir';
     else if (SC.results && SC.results.t > 30) {
       const r = SC.results;
       const rings = bcd(r.rings), mins = bcd(r.time >> 8), secs = bcd(r.time & 0xFF);
-      t = 'SONIC HAS PASSED\n\nRINGS  ' + rings + ' x 100 = ' + rings * 100 +
+      t = SC.CHARACTERS[SC.character].name.toUpperCase() + ' HAS PASSED\n\nRINGS  ' + rings + ' x 100 = ' + rings * 100 +
           '\nTIME   ' + mins + ':' + String(secs).padStart(2, '0') + '\n\nEnter para jugar otra vez';
     }
     if (t !== bannerText) { bannerText = t; bannerEl.textContent = t; bannerEl.style.display = t ? 'block' : 'none'; }
   }
-  addEventListener('keydown', (e) => { if (e.code === 'Enter' && SC.results && SC.results.t > 30) { SC.results = null; restart(); } });
+  addEventListener('keydown', (e) => { if (e.code === 'Enter' && !SC.selecting && SC.results && SC.results.t > 30) showSelect(); });
   window.addEventListener('blur', () => keys.clear());
 })();
